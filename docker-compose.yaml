@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - cosc2767-network
+
+  backend:
+    image: server-backend
+    container_name: backend
+    build: ./server
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./server/.env
+    depends_on:
+      - mongo
+    networks:
+      - cosc2767-network
+
+  frontend:
+    image: client-server
+    container_name: frontend
+    build: ./client
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - cosc2767-network
+
+volumes:
+  mongo_data:
+
+networks:
+  cosc2767-network:
+    driver: bridge
