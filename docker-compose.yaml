@@ -18,7 +18,7 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - ./server/.env
+      - ./server/.env.testing
     depends_on:
       - mongo
     networks:
@@ -30,6 +30,8 @@ services:
     build: ./client
     ports:
       - "8080:80"
+    env_file:
+      - ./client/.env.testing
     depends_on:
       - backend
     networks:

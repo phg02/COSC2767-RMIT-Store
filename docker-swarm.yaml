@@ -1,0 +1,114 @@
+services:
+  mongo:
+    image: mongo:latest
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - cosc2767-network
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker   # run only on workers
+
+  backend:
+    image: phg02/serverbackend:latest  # pre-build + load on all nodes
+    env_file:
+      - ./server/.env.production
+    depends_on:
+      - mongo
+    networks:
+      - cosc2767-network
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker   # run only on workers
+    ports:
+      - target: 3000
+        published: 3000
+        protocol: tcp
+        mode: ingress   # Swarm routing mesh
+
+  frontend:
+    image: phg02/clientserver:latest   # pre-build + load on all nodes
+    env_file:
+      - ./client/.env.production
+    depends_on:
+      - backend
+    networks:
+      - cosc2767-network
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker   # run only on workers
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: ingress   # Swarm routing mesh
+
+  # Node Exporter (system metrics for Prometheus)
+  node-exporter:
+    image: prom/node-exporter:latest
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - '/:/host:ro,rslave'
+    networks:
+      - cosc2767-network
+    deploy:
+      mode: global   # run on ALL nodes (master + workers)
+    ports:
+      - target: 9100
+        published: 9100
+        protocol: tcp
+        mode: host   # direct host port (so Prometheus can scrape)
+
+  # cAdvisor (container-level metrics)
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - cosc2767-network
+    deploy:
+      mode: global   # run on ALL nodes (master + workers)
+    ports:
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host   # Prometheus scrapes cadvisor per node
+
+mongo-exporter:
+    image: bitnami/mongodb-exporter:latest
+    networks:
+      - cosc2767-network
+    environment:
+      MONGODB_URI: "mongodb://mongo:27017"   # adjust if you use auth
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == worker   # keep it near mongo
+    ports:
+      - target: 9216
+        published: 9216
+        protocol: tcp
+        mode: ingress   # routing mesh, Prometheus can scrape from any node
+
+volumes:
+  mongo_data:
+
+networks:
+  cosc2767-network:
+    external: true

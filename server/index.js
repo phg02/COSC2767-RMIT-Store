@@ -40,6 +40,10 @@ setupDB();
 // Configure Passport.js for authentication
 require('./config/passport')(app);
 
+
+// Prometheus metrics endpoint
+app.use(require('./routes/prometheus'));
+
 // Use the defined routes for handling requests
 app.use(routes);
 
