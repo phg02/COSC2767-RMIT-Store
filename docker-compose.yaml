@@ -17,8 +17,11 @@ services:
     build: ./server
     ports:
       - "3000:3000"
-    env_file:
-      - ./server/.env.testing
+    environment:
+      NODE_ENV: testing
+      CLIENT_URL: http://54.163.198.63:8080
+      MONGO_URI: mongodb://mongo:27017/rmit_ecommerce
+      JWT_SECRET: my_secret_string
     depends_on:
       - mongo
     networks:
@@ -30,8 +33,9 @@ services:
     build: ./client
     ports:
       - "8080:80"
-    env_file:
-      - ./client/.env.testing
+    environment:
+      NODE_ENV: testing
+      API_URL: http://54.163.198.63:3000
     depends_on:
       - backend
     networks:
