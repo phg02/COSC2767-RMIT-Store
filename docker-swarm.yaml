@@ -91,7 +91,7 @@ services:
         protocol: tcp
         mode: host   # Prometheus scrapes cadvisor per node
 
-mongo-exporter:
+  mongo-exporter:
     image: bitnami/mongodb-exporter:latest
     networks:
       - cosc2767-network
