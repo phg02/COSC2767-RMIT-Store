@@ -8,6 +8,7 @@
     "seed:db": "node utils/seed.js"
   },
   "dependencies": {
+    "prom-client": "^15.1.0",
     "@faker-js/faker": "^9.9.0",
     "aws-sdk": "^2.799.0",
     "axios": "^0.21.1",
