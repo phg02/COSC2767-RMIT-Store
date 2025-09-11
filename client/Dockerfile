@@ -1,25 +1,28 @@
-# Use an official Node.js runtime as a parent image
-FROM node:22-alpine
+# Build stage
+FROM node:22-alpine AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
 
-# Copy the rest of the application code
 COPY . .
-
-# Build the React app for production
 RUN npm run build
 
-# Use nginx to serve the build
+# Nginx stage
 FROM nginx:alpine
-COPY --from=0 /app/dist /usr/share/nginx/html
+
+# Copy built React app
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy Nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copy entrypoint script
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 80
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

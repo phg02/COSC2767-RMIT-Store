@@ -31,6 +31,8 @@ services:
 
   frontend:
     image: phg02/clientserver:latest   # pre-build + load on all nodes
+    environment:
+      - API_URL=http://TestingALB-226086454.us-east-1.elb.amazonaws.com:3000/api
     depends_on:
       - backend
     networks:
