@@ -13,6 +13,9 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
+ARG API_URL
+ENV API_URL=$API_URL
+
 # Build the React app for production
 RUN npm run build
 
