@@ -24,17 +24,16 @@ services:
       - cosc2767-network
 
   frontend:
-    image: client-server
-    container_name: frontend
-    build: ./client
-    ports:
-      - "8080:80"
+  build:
+    context: ./client
     args:
-      API_URL: http://54.227.9.106:3000/api
-    depends_on:
-      - backend
-    networks:
-      - cosc2767-network
+      REACT_APP_API_URL: http://54.227.9.106:3000/api
+  ports:
+    - "8080:80"
+  depends_on:
+    - backend
+  networks:
+    - cosc2767-network
 
 volumes:
   mongo_data:
