@@ -17,7 +17,6 @@ services:
     build: ./server
     ports:
       - "3000:3000"
-
     depends_on:
       - mongo
     networks:
@@ -29,8 +28,6 @@ services:
     build: ./client
     ports:
       - "8080:80"
-    environment:
-      - API_URL=http://54.227.9.106:3000/api
     depends_on:
       - backend
     networks:
