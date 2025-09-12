@@ -4,7 +4,7 @@
   become: yes
   vars:
     repo_dest: "/root/COSC2767-RMIT-Store"
-    api_url_production: "TestingALB-226086454.us-east-1.elb.amazonaws.com"
+    api_url_production: "TestingALB-226086454.us-east-1.elb.amazonaws.com:300"
     dockerhub_user: "phg02"
     backend_image: "backendserver"
     frontend_image: "clientside"

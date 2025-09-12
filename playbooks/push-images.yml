@@ -4,7 +4,7 @@
   become: yes
   vars:
     dockerhub_user: "phg02"
-    backend_image: "serverbackend"
+    backend_image: "backendserver"
     frontend_image: "clientside"
 
   tasks:
