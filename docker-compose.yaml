@@ -21,14 +21,16 @@ services:
       - mongo
     networks:
       - cosc2767-network
+    command: >
+      sh -c "npm start & 
+             sleep 5 && 
+             npm --prefix . run seed:db admin@rmit.edu.vn mypassword &&
+             wait"
 
   frontend:
     image: client-server
     container_name: frontend
-    build:
-      context: ./client
-      args:
-        API_URL: http://54.227.9.106:3000/api
+    build: ./client
     ports:
       - "8080:80"
     depends_on:
