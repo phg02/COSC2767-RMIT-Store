@@ -11,7 +11,7 @@ services:
           - node.role == worker   # run only on workers
 
   backend:
-    image: phg02/serverbackend:latest  # pre-build + load on all nodes
+    image: phg02/backendserver:latest  # pre-build + load on all nodes
     depends_on:
       - mongo
     networks:
@@ -30,7 +30,7 @@ services:
         mode: ingress   # Swarm routing mesh
 
   frontend:
-    image: phg02/clientserver:latest   # pre-build + load on all nodes
+    image: phg02/clientside:latest   # pre-build + load on all nodes
     depends_on:
       - backend
     networks:

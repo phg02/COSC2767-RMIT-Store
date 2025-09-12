@@ -1,0 +1,43 @@
+---
+- name: Testing stage (clean DB + run containers + test backend)
+  hosts: testing
+  become: yes
+  vars:
+    repo_url: "https://github.com/YourOrg/YourRepo.git"
+    repo_dest: "/home/ec2-user/app"
+    api_url_testing: "http://54.205.6.124:3000/api"
+
+  tasks:
+    - name: Pull latest code
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_dest }}"
+        version: main
+        force: yes
+
+    - name: Write .env for testing
+      copy:
+        dest: "{{ repo_dest }}/.env"
+        content: |
+          API_URL={{ api_url_testing }}
+
+    - name: Stop and remove existing containers + volumes
+      command: docker compose down -v
+      args:
+        chdir: "{{ repo_dest }}"
+      ignore_errors: yes  # in case nothing is running
+
+    - name: Build and start containers (fresh)
+      command: docker compose up --build -d
+      args:
+        chdir: "{{ repo_dest }}"
+
+    - name: Run backend tests
+      command: docker exec backend npm test
+      register: test_result
+      ignore_errors: yes
+
+    - name: Fail if tests did not pass
+      fail:
+        msg: "Tests failed, stopping pipeline."
+      when: test_result.rc != 0

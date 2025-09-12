@@ -12,7 +12,7 @@ services:
       - cosc2767-network
 
   backend:
-    image: server-backend
+    image: backend-server
     container_name: backend
     build: ./server
     ports:
@@ -28,7 +28,7 @@ services:
              wait"
 
   frontend:
-    image: client-server
+    image: client-side
     container_name: frontend
     build: ./client
     ports:

@@ -1,0 +1,34 @@
+---
+- name: Prepare production build (backend + frontend)
+  hosts: testing
+  become: yes
+  vars:
+    repo_dest: "/home/ec2-user/app"
+    api_url_production: "http://ProdALB-198273654.us-east-1.elb.amazonaws.com:3000/api"
+    dockerhub_user: "your_dockerhub_username"
+    backend_image: "serverbackend"
+    frontend_image: "clientside"
+
+  tasks:
+    - name: Override .env for production
+      lineinfile:
+        path: "{{ repo_dest }}/.env"
+        regexp: '^API_URL='
+        line: "API_URL={{ api_url_production }}"
+        create: yes
+
+    - name: Build backend image
+      command: docker build -t {{ backend_image }}:latest ./server
+      args:
+        chdir: "{{ repo_dest }}"
+
+    - name: Build frontend image
+      command: docker build -t {{ frontend_image }}:latest ./client
+      args:
+        chdir: "{{ repo_dest }}"
+
+    - name: Tag backend image for Docker Hub
+      command: docker tag {{ backend_image }}:latest {{ dockerhub_user }}/{{ backend_image }}:latest
+
+    - name: Tag frontend image for Docker Hub
+      command: docker tag {{ frontend_image }}:latest {{ dockerhub_user }}/{{ frontend_image }}:latest

@@ -1,0 +1,15 @@
+---
+- name: Push backend and frontend images to Docker Hub
+  hosts: testing
+  become: yes
+  vars:
+    dockerhub_user: "phg02"
+    backend_image: "server-backend"
+    frontend_image: "client-server"
+
+  tasks:
+    - name: Push backend image
+      command: docker push {{ dockerhub_user }}/{{ backend_image }}:latest
+
+    - name: Push frontend image
+      command: docker push {{ dockerhub_user }}/{{ frontend_image }}:latest
