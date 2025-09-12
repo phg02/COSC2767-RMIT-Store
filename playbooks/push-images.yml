@@ -4,8 +4,8 @@
   become: yes
   vars:
     dockerhub_user: "phg02"
-    backend_image: "server-backend"
-    frontend_image: "client-server"
+    backend_image: "serverbackend"
+    frontend_image: "clientside"
 
   tasks:
     - name: Push backend image

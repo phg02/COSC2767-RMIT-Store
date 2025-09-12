@@ -3,8 +3,8 @@
   hosts: testing
   become: yes
   vars:
-    repo_url: "https://github.com/YourOrg/YourRepo.git"
-    repo_dest: "/home/ec2-user/app"
+    repo_url: "https://github.com/phg02/COSC2767-RMIT-Store.git"
+    repo_dest: "/root/COSC2767-RMIT-Store"
     api_url_testing: "http://54.205.6.124:3000/api"
 
   tasks:
@@ -17,18 +17,18 @@
 
     - name: Write .env for testing
       copy:
-        dest: "{{ repo_dest }}/.env"
+        dest: "{{ repo_dest }}/client/.env"
         content: |
           API_URL={{ api_url_testing }}
 
     - name: Stop and remove existing containers + volumes
-      command: docker compose down -v
+      command: docker-compose down -v
       args:
         chdir: "{{ repo_dest }}"
       ignore_errors: yes  # in case nothing is running
 
     - name: Build and start containers (fresh)
-      command: docker compose up --build -d
+      command: docker-compose up --build -d
       args:
         chdir: "{{ repo_dest }}"
 
