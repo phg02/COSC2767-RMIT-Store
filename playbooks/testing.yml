@@ -8,6 +8,7 @@
     api_url_testing: "http://54.205.6.124:3000/api"
 
   tasks:
+    # ----------------- Pull latest code -----------------
     - name: Pull latest code
       git:
         repo: "{{ repo_url }}"
@@ -15,29 +16,44 @@
         version: main
         force: yes
 
+    # ----------------- Write testing .env -----------------
     - name: Write .env for testing
       copy:
         dest: "{{ repo_dest }}/client/.env"
         content: |
           API_URL={{ api_url_testing }}
 
+    # ----------------- Stop existing containers -----------------
     - name: Stop and remove existing containers + volumes
       command: docker-compose down -v
       args:
         chdir: "{{ repo_dest }}"
-      ignore_errors: yes  # in case nothing is running
+      ignore_errors: yes  # safe if nothing is running
 
+    # ----------------- Build and start containers -----------------
     - name: Build and start containers (fresh)
       command: docker-compose up --build -d
       args:
         chdir: "{{ repo_dest }}"
+      register: compose_up_result
+      failed_when: compose_up_result.rc != 0
+      ignore_errors: no
 
+    - name: Print docker-compose output
+      debug:
+        msg: "{{ compose_up_result.stdout }}"
+
+    # ----------------- Run backend tests -----------------
     - name: Run backend tests
       command: docker exec backend npm test
       register: test_result
-      ignore_errors: yes
+      ignore_errors: yes  # still capture failures but allow logging
 
-    - name: Fail if tests did not pass
+    - name: Print test output
+      debug:
+        msg: "{{ test_result.stdout }}"
+
+    - name: Fail if backend tests did not pass
       fail:
-        msg: "Tests failed, stopping pipeline."
+        msg: "Backend tests failed. Stopping pipeline."
       when: test_result.rc != 0

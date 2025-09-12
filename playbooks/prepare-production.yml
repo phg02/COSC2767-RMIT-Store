@@ -1,4 +1,3 @@
----
 - name: Prepare production build (backend + frontend)
   hosts: testing
   become: yes
@@ -10,6 +9,7 @@
     frontend_image: "clientside"
 
   tasks:
+
     - name: Override .env for production
       lineinfile:
         path: "{{ repo_dest }}/client/.env"
@@ -21,14 +21,55 @@
       command: docker build -t {{ backend_image }}:latest ./server
       args:
         chdir: "{{ repo_dest }}"
+      register: backend_build_result
+      failed_when: backend_build_result.rc != 0
+      ignore_errors: no
 
+    - name: Print backend build output
+      debug:
+        msg: "{{ backend_build_result.stdout }}"
+
+    - name: Fail if backend build failed
+      fail:
+        msg: "Backend image build failed. Stopping deployment."
+      when: backend_build_result.rc != 0
+
+    - name: Tag backend image for Docker Hub
+      command: docker tag {{ backend_image }}:latest {{ dockerhub_user }}/{{ backend_image }}:latest
+      register: backend_tag_result
+      failed_when: backend_tag_result.rc != 0
+      ignore_errors: no
+
+    - name: Fail if backend tag failed
+      fail:
+        msg: "Backend image tagging failed. Stopping deployment."
+      when: backend_tag_result.rc != 0
+
+ 
     - name: Build frontend image
       command: docker build -t {{ frontend_image }}:latest ./client
       args:
         chdir: "{{ repo_dest }}"
+      register: frontend_build_result
+      failed_when: frontend_build_result.rc != 0
+      ignore_errors: no
 
-    - name: Tag backend image for Docker Hub
-      command: docker tag {{ backend_image }}:latest {{ dockerhub_user }}/{{ backend_image }}:latest
+    - name: Print frontend build output
+      debug:
+        msg: "{{ frontend_build_result.stdout }}"
+
+    - name: Fail if frontend build failed
+      fail:
+        msg: "Frontend image build failed. Stopping deployment."
+      when: frontend_build_result.rc != 0
 
     - name: Tag frontend image for Docker Hub
       command: docker tag {{ frontend_image }}:latest {{ dockerhub_user }}/{{ frontend_image }}:latest
+      register: frontend_tag_result
+      failed_when: frontend_tag_result.rc != 0
+      ignore_errors: no
+
+    - name: Fail if frontend tag failed
+      fail:
+        msg: "Frontend image tagging failed. Stopping deployment."
+      when: frontend_tag_result.rc != 0
